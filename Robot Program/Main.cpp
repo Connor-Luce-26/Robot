@@ -1,11 +1,8 @@
-#include "ColumnVector.hpp"
+#include "Vector.hpp"
 int main()
 {
 	Vector a;
-	a = Vector(6, 1.0);
+	a = Vector(6, 1.0, "row");
 	a.print();
-	Vector b;
-	b = a / 2.0;
-	b.print();
 	return 0;
 }
