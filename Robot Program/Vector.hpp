@@ -83,7 +83,7 @@ public:
 	Vector operator+(Vector other)
 	{
 		this->ensureEqualSize(other);
-		this->ensureShapeEquality(other);
+		this->ensureEqualShape(other);
 		std::vector<double> result;
 		for (int i = 0; i < this->size(); i++)
 		{
@@ -128,6 +128,7 @@ public:
 	double dotProduct(Vector other)
 	{
 		this->ensureEqualSize(other);
+		this->ensureEqualShape(other);
 		double result = 0.0;
 		for (int i = 0; i < this->size(); i++)
 		{
@@ -144,7 +145,7 @@ public:
 		}
 	}
 	// Method to throw an error if the vectors are not the same shape
-	void ensureShapeEquality(Vector other)
+	void ensureEqualShape(Vector other)
 	{
 		if (this->getShape() != other.getShape())
 		{
@@ -189,7 +190,7 @@ public:
 		result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " " + std::to_string(this->getValue(Vector::size() - 1)) + " " + RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
 		std::cout << result;
 	}
-	// Method to get the transpose of the vector
+	// Method to calculate the transpose of the vector
 	Vector transpose()
 	{
 		if (this->shape == "column")
@@ -205,7 +206,7 @@ public:
 			throw std::invalid_argument("Invalid shape");
 		}
 	}
-	// Method to get the p-norm of the vector
+	// Method to calculate the p-norm of the vector
 	double pNorm(unsigned int p)
 	{
 		double result = 0.0;
@@ -215,7 +216,7 @@ public:
 		}
 		return pow(result, 1.0 / p);
 	}
-	// Method to get the infinity norm of the vector
+	// Method to calculate the infinity norm of the vector
 	double infinityNorm()
 	{
 		double result = 0.0;
@@ -225,9 +226,27 @@ public:
 		}
 		return result;
 	}
-	// Method to get the magnitude of the vector
+	// Method to calculate the magnitude of the vector
 	double magnitude()
 	{
 		return this->pNorm(2);
+	}
+	// Method to calculate the unit vector
+	Vector unitVector()
+	{
+		return *this / this->magnitude();
+	}
+	// Method to overload the * operator to multiply a vector by another vector
+	double operator*(Vector other)
+	{
+		this->ensureEqualSize(other);
+		if (this->shape == "row" && other.getShape() == "column")
+		{
+			return this->dotProduct(other.transpose());
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid shapes for multiplication");
+		}
 	}
 };
