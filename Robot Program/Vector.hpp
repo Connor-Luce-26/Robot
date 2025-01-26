@@ -4,6 +4,7 @@
 #include <string>
 #include <tuple>
 #include "UTF8Symbols.hpp"
+#include <math.h>
 
 // Class representing a generic vector
 class Vector
@@ -187,5 +188,46 @@ public:
 		}
 		result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " " + std::to_string(this->getValue(Vector::size() - 1)) + " " + RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
 		std::cout << result;
+	}
+	// Method to get the transpose of the vector
+	Vector transpose()
+	{
+		if (this->shape == "column")
+		{
+			return Vector(this->value, "row");
+		}
+		else if (this->shape == "row")
+		{
+			return Vector(this->value, "column");
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid shape");
+		}
+	}
+	// Method to get the p-norm of the vector
+	double pNorm(unsigned int p)
+	{
+		double result = 0.0;
+		for (int i = 0; i < this->size(); i++)
+		{
+			result += pow(abs(this->getValue(i)), p);
+		}
+		return pow(result, 1.0 / p);
+	}
+	// Method to get the infinity norm of the vector
+	double infinityNorm()
+	{
+		double result = 0.0;
+		for (int i = 0; i < this->size(); i++)
+		{
+			result = std::max(result, abs(this->getValue(i)));
+		}
+		return result;
+	}
+	// Method to get the magnitude of the vector
+	double magnitude()
+	{
+		return this->pNorm(2);
 	}
 };
