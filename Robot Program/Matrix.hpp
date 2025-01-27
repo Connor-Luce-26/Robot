@@ -107,18 +107,35 @@ public:
 		this->value[row][column] = value;
 	}
 	// Method to convert a row of the matrix to a string
-	std::string rowToString(int row)
+	std::string rowToString(int row, int longestElementLength)
 	{
 		std::string result = "";
 		for (int column = 0; column < this->numberOfColumns(); column++)
 		{
-			result += std::to_string(this->getValue(row, column)) + " ";
+			std::string element = std::to_string(this->getValue(row, column));
+			int padding = longestElementLength - element.size();
+			result += element + std::string(padding, ' ') + " ";
+		}
+		return result;
+	}
+	// Method to find the string representation of a matrix element that is the longest
+	int findLongestElementLength()
+	{
+		int result = 0;
+		std::vector<Vector> rowVectors = this->toRowVectors();
+		for (int i = 0; i < this->numberOfRows(); i++)
+		{
+			if (result < rowVectors[i].findLongestElementLength())
+			{
+				result = rowVectors[i].findLongestElementLength();
+			}
 		}
 		return result;
 	}
 	// Method to print the matrix
 	void print()
 	{
+		int longestElementLength = this->findLongestElementLength();
 		std::string result = "";
 		if (this->numberOfRows() <= 1)
 		{
@@ -127,16 +144,16 @@ public:
 		else
 		{
 			std::string result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " ";
-			result += this->rowToString(0);
+			result += this->rowToString(0, longestElementLength);
 			result += RIGHT_SQUARE_BRACKET_UPPER_CORNER + "\n";
 			for (int row = 1; row < this->numberOfRows() - 1; row++)
 			{
 				result += LEFT_SQUARE_BRACKET_EXTENSION + " ";
-				result += this->rowToString(row);
+				result += this->rowToString(row, longestElementLength);
 				result += RIGHT_SQUARE_BRACKET_EXTENSION + "\n";
 			}
 			result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " ";
-			result += this->rowToString(this->numberOfRows() - 1);
+			result += this->rowToString(this->numberOfRows() - 1, longestElementLength);
 			result += RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
 			std::cout << result;
 		}

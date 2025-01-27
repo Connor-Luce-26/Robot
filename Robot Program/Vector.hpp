@@ -153,16 +153,46 @@ public:
 			throw std::invalid_argument("Vectors must have the same shape");
 		}
 	}
+	// Method to find the string representation of a vector element that is the longest
+	int findLongestElementLength()
+	{
+		int result = 0;
+		for (int i = 0; i < this->size(); i++)
+		{
+			if (result < std::to_string(this->getValue(i)).size())
+			{
+				result = std::to_string(this->getValue(i)).size();
+			}
+		}
+		return result;
+	}
 	// Method to print the vector
 	void print()
 	{
+		int longestElementLength = this->findLongestElementLength();
 		if (this->shape == "column")
 		{
-			this->printColumnVector();
+			this->printColumnVector(longestElementLength);
 		}
 		else if (this->shape == "row")
 		{
-			this->printRowVector();
+			this->printRowVector(longestElementLength);
+		}
+		else
+		{
+			throw std::invalid_argument("Invalid shape");
+		}
+	}
+	// Method to print the vector given the longest element length
+	void print(int longestElementLength)
+	{
+		if (this->shape == "column")
+		{
+			this->printColumnVector(longestElementLength);
+		}
+		else if (this->shape == "row")
+		{
+			this->printRowVector(longestElementLength);
 		}
 		else
 		{
@@ -170,25 +200,37 @@ public:
 		}
 	}
 	// Method to print the row vector
-	void printRowVector()
+	void printRowVector(int longestElementLength)
 	{
 		std::string result = LEFT_SQUARE_BRACKET + " ";
+	    int padding = 0;
+		std::string element = "";
 		for (int i = 0; i < Vector::size() - 1; i++)
 		{
-			result += std::to_string(this->getValue(i)) + " ";
+			element = std::to_string(this->getValue(i));
+			padding = longestElementLength - element.size();
+			result += element + std::string(padding, ' ') + " ";
 		}
-		result += std::to_string(this->getValue(Vector::size() - 1)) + " " + RIGHT_SQUARE_BRACKET + "\n";
+		element = std::to_string(this->getValue(this->size() - 1));
+		padding = longestElementLength - element.size();
+		result += element + std::string(padding, ' ') + " " + RIGHT_SQUARE_BRACKET + "\n";
 		std::cout << result;
 	}
 	// Method to print the column vector
-	void printColumnVector()
+	void printColumnVector(int longestElementLength)
 	{
-		std::string result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " " + std::to_string(this->getValue(0)) + " " + RIGHT_SQUARE_BRACKET_UPPER_CORNER + "\n";
+		std::string element = std::to_string(this->getValue(0));
+		int padding = longestElementLength - element.size();
+		std::string result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " " + element + std::string(padding, ' ') + " " + RIGHT_SQUARE_BRACKET_UPPER_CORNER + "\n";
 		for (int i = 1; i < Vector::size() - 1; i++)
 		{
-			result += LEFT_SQUARE_BRACKET_EXTENSION + " " + std::to_string(this->getValue(i)) + " " + RIGHT_SQUARE_BRACKET_EXTENSION + "\n";
+			element = std::to_string(this->getValue(i));
+			padding = longestElementLength - element.size();
+			result += LEFT_SQUARE_BRACKET_EXTENSION + " " + element + std::string(padding, ' ') + " " + RIGHT_SQUARE_BRACKET_EXTENSION + "\n";
 		}
-		result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " " + std::to_string(this->getValue(Vector::size() - 1)) + " " + RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
+		element = std::to_string(this->getValue(this->size() - 1));
+		padding = longestElementLength - element.size();
+		result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " " + element + std::string(padding, ' ') + " " + RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
 		std::cout << result;
 	}
 	// Method to calculate the transpose of the vector
