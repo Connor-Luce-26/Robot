@@ -55,6 +55,14 @@ public:
 			throw std::invalid_argument("Invalid shape");
 		}
 	}
+	// Constructor that initializes an identity matrix of a given size
+	Matrix(int size) : Matrix(size, size, 0.0)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			this->setValue(i, i, 1.0);
+		}
+	}
 	// Default constructor that initializes an empty matrix
 	Matrix()
 	{
@@ -92,6 +100,10 @@ public:
 	// Set the value of the matrix at a given row and column
 	void setValue(int row, int column, double value)
 	{
+		if (row < 0 || row >= this->numberOfRows() || column < 0 || column >= this->numberOfColumns())
+		{
+			throw std::out_of_range("Row or column index out of bounds");
+		}
 		this->value[row][column] = value;
 	}
 	// Method to convert a row of the matrix to a string
@@ -117,7 +129,7 @@ public:
 			std::string result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " ";
 			result += this->rowToString(0);
 			result += RIGHT_SQUARE_BRACKET_UPPER_CORNER + "\n";
-			for(int row = 1; row < this->numberOfRows() - 1; row++)
+			for (int row = 1; row < this->numberOfRows() - 1; row++)
 			{
 				result += LEFT_SQUARE_BRACKET_EXTENSION + " ";
 				this->rowToString(row);
@@ -161,19 +173,256 @@ public:
 		std::vector<Vector> newVectors;
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
-			newVectors[i] = oldVectors[i].transpose();
+			newVectors.push_back(oldVectors[i].transpose());
 		}
 		return Matrix(newVectors);
 	}
 	// Method to overload the * operator to multiply a matrix by a scalar
 	Matrix operator*(double scalar)
 	{
-		std::vector<Vector> oldVectors = this->toColumnVectors();
+		std::vector<Vector> oldVectors = this->toRowVectors();
 		std::vector<Vector> newVectors;
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
-			newVectors[i] = oldVectors[i] * scalar;
+			newVectors.push_back(oldVectors[i] * scalar);
 		}
 		return Matrix(newVectors);
+	}
+	// Method to overload the * operator to multiply two matrices
+	Matrix operator*(Matrix other)
+	{
+		if (this->numberOfColumns() != other.numberOfRows())
+		{
+			throw std::invalid_argument("Invalid dimensions");
+		}
+		std::vector<Vector> rowVectors = this->toRowVectors();
+		std::vector<Vector> columnVectors = other.toColumnVectors();
+		std::vector<std::vector<double>> results;
+		for (int row = 0; row < this->numberOfRows(); row++)
+		{
+			std::vector<double> result;
+			for (int column = 0; column < other.numberOfColumns(); column++)
+			{
+				result.push_back(rowVectors[row] * (columnVectors[column]));
+			}
+			results.push_back(result);
+		}
+		return Matrix(results);
+	}
+	// Method to throw an error if the matrices are not the same size
+	void ensureEqualSize(Matrix other)
+	{
+		if (this->numberOfRows() != other.numberOfRows() || this->numberOfColumns() != other.numberOfColumns())
+		{
+			throw std::invalid_argument("Matrices must be the same size");
+		}
+	}
+	// Method to overload the + operator to add two matrices
+	Matrix operator+(Matrix other)
+	{
+		this->ensureEqualSize(other);
+		std::vector<Vector> oldVectors = this->toRowVectors();
+		std::vector<Vector> otherVectors = other.toRowVectors();
+		std::vector<Vector> newVectors;
+		for (int i = 0; i < oldVectors.size(); i++)
+		{
+			newVectors.push_back(oldVectors[i] + otherVectors[i]);
+		}
+		return Matrix(newVectors);
+	}
+	// Method to overload the - operator to subtract two matrices
+	Matrix operator-(Matrix other)
+	{
+		return *this + (other * -1.0);
+	}
+	// Method to overload the / operator to divide a matrix by a scalar
+	Matrix operator/(double scalar)
+	{
+		return *this * (1.0 / scalar);
+	}
+	// Method to overload the == operator to compare two matrices
+	bool operator==(Matrix other)
+	{
+		std::vector<Vector> oldVectors = this->toRowVectors();
+		std::vector<Vector> otherVectors = other.toRowVectors();
+		for (int i = 0; i < oldVectors.size(); i++)
+		{
+			if (oldVectors[i] != otherVectors[i])
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	// Method to overload the != operator to compare two matrices
+	bool operator!=(Matrix other)
+	{
+		return !(*this == other);
+	}
+	// method to throw an error if the matrix is not square
+	void ensureSquare()
+	{
+		if (this->numberOfRows() != this->numberOfColumns())
+		{
+			throw std::invalid_argument("Matrix must be square");
+		}
+	}
+	// Method to calculate the determinant of the matrix
+	double determinant()
+	{
+		this->ensureSquare();
+		if (this->numberOfRows() == 1)
+		{
+			return this->getValue(0, 0);
+		}
+		else
+		{
+			double result = 0.0;
+			for (int column = 0; column < this->numberOfColumns(); column++)
+			{
+				Matrix submatrix = Matrix(this->numberOfRows() - 1, this->numberOfColumns() - 1);
+				for (int row = 1; row < this->numberOfRows(); row++)
+				{
+					int subcolumn = 0;
+					for (int subrow = 0; subrow < this->numberOfColumns(); subrow++)
+					{
+						if (subrow != column)
+						{
+							submatrix.setValue(row - 1, subcolumn, this->getValue(row, subrow));
+							subcolumn++;
+						}
+					}
+				}
+				result += pow(-1, column) * this->getValue(0, column) * submatrix.determinant();
+			}
+			return result;
+		}
+	}
+	// Method to throw an error if the matrix is not invertible
+	void ensureInvertible()
+	{
+		if (this->determinant() == 0.0)
+		{
+			throw std::invalid_argument("Matrix is not invertible");
+		}
+	}
+	// Method to check if the matrix is an identity matrix
+	bool isIdentity()
+	{
+		this->ensureSquare();
+		for (int row = 0; row < this->numberOfRows(); row++)
+		{
+			for (int column = 0; column < this->numberOfColumns(); column++)
+			{
+				if (row == column)
+				{
+					if (this->getValue(row, column) != 1.0)
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (this->getValue(row, column) != 0.0)
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+	// Method to calculate the minor of the matrix
+	Matrix minor()
+	{
+		this->ensureSquare();
+		Matrix result = Matrix(this->numberOfRows(), this->numberOfColumns());
+		for (int row = 0; row < this->numberOfRows(); row++)
+		{
+			for (int column = 0; column < this->numberOfColumns(); column++)
+			{
+				Matrix submatrix = Matrix(this->numberOfRows() - 1, this->numberOfColumns() - 1);
+				int subrow = 0;
+				for (int i = 0; i < this->numberOfRows(); i++)
+				{
+					if (i != row)
+					{
+						int subcolumn = 0;
+						for (int j = 0; j < this->numberOfColumns(); j++)
+						{
+							if (j != column)
+							{
+								submatrix.setValue(subrow, subcolumn, this->getValue(i, j));
+								subcolumn++;
+							}
+						}
+						subrow++;
+					}
+				}
+				result.setValue(row, column, submatrix.determinant());
+			}
+		}
+		return result;
+	}
+	// Method to calculate the cofactor of the matrix
+	Matrix cofactor()
+	{
+		this->ensureSquare();
+		Matrix minor = this->minor();
+		Matrix result = Matrix(this->numberOfRows(), this->numberOfColumns());
+		for (int row = 0; row < this->numberOfRows(); row++)
+		{
+			for (int column = 0; column < this->numberOfColumns(); column++)
+			{
+				result.setValue(row, column, pow(-1, row + column) * minor.getValue(row, column));
+			}
+		}
+		return result;
+	}
+	// Method to calculate the adjoint of the matrix
+	Matrix adjoint()
+	{
+		this->ensureSquare();
+		return this->minor().transpose();
+	}
+	// Method to calculate the inverse of the matrix
+	Matrix inverse()
+	{
+		this->ensureSquare();
+		this->ensureInvertible();
+		return this->adjoint() / this->determinant();
+	}
+	// Method to multiply a matrix by a vector
+	Vector operator*(Vector other)
+	{
+		if (this->numberOfColumns() != other.size() && other.getShape() == "column")
+		{
+			throw std::invalid_argument("Invalid dimensions");
+		}
+		std::vector<double> result;
+		std::vector<Vector> rowVectors = this->toRowVectors();
+		for (int row = 0; row < this->numberOfRows(); row++)
+		{
+			result.push_back(rowVectors[row] * other);
+		}
+		return Vector(result, "column");
+	}
+	// Method to check if the matrix is square
+	bool isSquare()
+	{
+		return this->numberOfRows() == this->numberOfColumns();
+	}
+	// Method to calculate the pseudo-inverse of the matrix
+	Matrix pseudoInverse()
+	{
+		if (this->isSquare())
+		{
+			return this->inverse();
+		}
+		else
+		{
+			// TODO: fix this
+			return (this->transpose() * this).inverse() * this->transpose();
+		}
 	}
 };
