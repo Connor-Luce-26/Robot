@@ -132,7 +132,7 @@ public:
 			for (int row = 1; row < this->numberOfRows() - 1; row++)
 			{
 				result += LEFT_SQUARE_BRACKET_EXTENSION + " ";
-				this->rowToString(row);
+				result += this->rowToString(row);
 				result += RIGHT_SQUARE_BRACKET_EXTENSION + "\n";
 			}
 			result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " ";
@@ -374,7 +374,7 @@ public:
 		{
 			for (int column = 0; column < this->numberOfColumns(); column++)
 			{
-				result.setValue(row, column, pow(-1, row + column) * minor.getValue(row, column));
+				result.setValue(row, column, pow(-1, row + column + 2) * minor.getValue(row, column));
 			}
 		}
 		return result;
@@ -383,7 +383,7 @@ public:
 	Matrix adjoint()
 	{
 		this->ensureSquare();
-		return this->minor().transpose();
+		return this->cofactor().transpose();
 	}
 	// Method to calculate the inverse of the matrix
 	Matrix inverse()
@@ -417,12 +417,14 @@ public:
 	{
 		if (this->isSquare())
 		{
+			this->ensureInvertible();
 			return this->inverse();
 		}
 		else
 		{
-			// TODO: fix this
-			return (this->transpose() * this).inverse() * this->transpose();
+			Matrix transposedMatrix = this->transpose();
+			Matrix matrixCopy = Matrix(this->getValue());
+			return (transposedMatrix * matrixCopy).inverse() * transposedMatrix;
 		}
 	}
 };
