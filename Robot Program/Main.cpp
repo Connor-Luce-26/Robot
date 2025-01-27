@@ -1,8 +1,9 @@
 #include "Vector.hpp"
+#include "Matrix.hpp"
 int main()
 {
-	Vector a;
-	a = Vector(6, 1.0, "row");
-	a.print();
+	Matrix A = Matrix(2, 2, 1.0);
+	A.print();
+	(A * 2.0).print();
 	return 0;
 }
