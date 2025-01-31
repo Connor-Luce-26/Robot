@@ -4,7 +4,7 @@
 #include <string>
 #include <tuple>
 #include "UTF8Symbols.hpp"
-#include <math.h>
+#include <math>
 
 // Class representing a generic vector
 class Vector
