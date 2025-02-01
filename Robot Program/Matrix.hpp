@@ -1,15 +1,17 @@
 #pragma once
 #include "Vector.hpp"
+#include "ArrayList.hpp"
+#include "String.h"
 // Class representing a generic matrix
 class Matrix
 {
 private:
 	// Matrix to store the values of the matrix
-	std::vector<std::vector<double>> value;
+	ArrayList<ArrayList<double>> value;
 
 public:
 	// Constructor that initializes the matrix with a given matrix of values
-	Matrix(std::vector<std::vector<double>> value)
+	Matrix(ArrayList<ArrayList<double>> value)
 	{
 		this->value = value;
 	}
@@ -18,7 +20,7 @@ public:
 	{
 		for (int i = 0; i < numberOfRows; i++)
 		{
-			std::vector<double> row;
+			ArrayList<double> row;
 			for (int j = 0; j < numberOfColumns; j++)
 			{
 				row.push_back(value);
@@ -30,29 +32,29 @@ public:
 	Matrix(int numberOfRows, int numberOfColumns) : Matrix(numberOfRows, numberOfColumns, 0.0)
 	{
 	}
-	// Constructor that initializes the matrix with a vector of vectors
-	Matrix(std::vector<Vector> vectors)
+	// Constructor that initializes the matrix with a ArrayList of Vector objects
+	Matrix(ArrayList<Vector> VectorArrayList)
 	{
-		if (vectors[0].getShape() == "column")
+		if (VectorArrayList[0].getShape() == "column")
 		{
-			for (int column = 0; column < vectors[0].size(); column++)
+			for (int column = 0; column < VectorArrayList[0].size(); column++)
 			{
-				for (int row = 0; row < vectors.size(); row++)
+				for (int row = 0; row < VectorArrayList.size(); row++)
 				{
-					this->value[row].push_back(vectors[row].getValue(column));
+					this->value[row].push_back(VectorArrayList[row].getValue(column));
 				}
 			}
 		}
-		else if (vectors[0].getShape() == "row")
+		else if (VectorArrayList[0].getShape() == "row")
 		{
-			for (int row = 0; row < vectors.size(); row++)
+			for (int row = 0; row < VectorArrayList.size(); row++)
 			{
-				this->value.push_back(vectors[row].getValue());
+				this->value.push_back(VectorArrayList[row].getValue());
 			}
 		}
 		else
 		{
-			throw std::invalid_argument("Invalid shape");
+			Serial.println("Invalid shape");
 		}
 	}
 	// Constructor that initializes an identity matrix of a given size
@@ -66,7 +68,7 @@ public:
 	// Default constructor that initializes an empty matrix
 	Matrix()
 	{
-		this->value = std::vector<std::vector<double>>();
+		this->value = ArrayList<ArrayList<double>>();
 	}
 	// Destructor
 	~Matrix()
@@ -83,7 +85,7 @@ public:
 		return this->value[0].size();
 	}
 	// Get the value of the matrix
-	std::vector<std::vector<double>> getValue()
+	ArrayList<ArrayList<double>> getValue()
 	{
 		return this->value;
 	}
@@ -93,7 +95,7 @@ public:
 		return this->value[row][column];
 	}
 	// Set the value of the matrix
-	void setValue(std::vector<std::vector<double>> value)
+	void setValue(ArrayList<ArrayList<double>> value)
 	{
 		this->value = value;
 	}
@@ -102,27 +104,27 @@ public:
 	{
 		if (row < 0 || row >= this->numberOfRows() || column < 0 || column >= this->numberOfColumns())
 		{
-			throw std::out_of_range("Row or column index out of bounds");
+			Serial.println("Index out of bounds");
 		}
 		this->value[row][column] = value;
 	}
-	// Method to convert a row of the matrix to a string
-	std::string rowToString(int row, int longestElementLength)
+	// Method to convert a row of the matrix to a String
+	String rowToString(int row, int longestElementLength)
 	{
-		std::string result = "";
+		String result = "";
 		for (int column = 0; column < this->numberOfColumns(); column++)
 		{
-			std::string element = std::to_string(this->getValue(row, column));
+			String element = to_String(this->getValue(row, column));
 			int padding = longestElementLength - element.size();
-			result += element + std::string(padding, ' ') + " ";
+			result += element + String(padding, ' ') + " ";
 		}
 		return result;
 	}
-	// Method to find the string representation of a matrix element that is the longest
+	// Method to find the String representation of a matrix element that is the longest
 	int findLongestElementLength()
 	{
 		int result = 0;
-		std::vector<Vector> rowVectors = this->toRowVectors();
+		ArrayList<Vector> rowVectors = this->toRowVectors();
 		for (int i = 0; i < this->numberOfRows(); i++)
 		{
 			if (result < rowVectors[i].findLongestElementLength())
@@ -136,14 +138,14 @@ public:
 	void print()
 	{
 		int longestElementLength = this->findLongestElementLength();
-		std::string result = "";
+		String result = "";
 		if (this->numberOfRows() <= 1)
 		{
 			Vector(this->value[0], "row").print();
 		}
 		else
 		{
-			std::string result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " ";
+			String result = LEFT_SQUARE_BRACKET_UPPER_CORNER + " ";
 			result += this->rowToString(0, longestElementLength);
 			result += RIGHT_SQUARE_BRACKET_UPPER_CORNER + "\n";
 			for (int row = 1; row < this->numberOfRows() - 1; row++)
@@ -155,16 +157,16 @@ public:
 			result += LEFT_SQUARE_BRACKET_LOWER_CORNER + " ";
 			result += this->rowToString(this->numberOfRows() - 1, longestElementLength);
 			result += RIGHT_SQUARE_BRACKET_LOWER_CORNER + "\n";
-			std::cout << result;
+			serial.print(result);
 		}
 	}
-	// Method to convert the matrix to a vector of column vectors
-	std::vector<Vector> toColumnVectors()
+	// Method to convert the matrix to a ArrayList of column ArrayLists
+	ArrayList<Vector> toColumnVectors()
 	{
-		std::vector<Vector> result;
+		ArrayList<Vector> result;
 		for (int column = 0; column < this->numberOfColumns(); column++)
 		{
-			std::vector<double> values;
+			ArrayList<double> values;
 			for (int row = 0; row < this->numberOfRows(); row++)
 			{
 				values.push_back(this->getValue(row, column));
@@ -173,10 +175,10 @@ public:
 		}
 		return result;
 	}
-	// Method to convert the matrix to a vector of row vectors
-	std::vector<Vector> toRowVectors()
+	// Method to convert the matrix to a ArrayList of row ArrayLists
+	ArrayList<Vector> toRowVectors()
 	{
-		std::vector<Vector> result;
+		ArrayList<Vector> result;
 		for (int row = 0; row < this->numberOfRows(); row++)
 		{
 			result.push_back(Vector(this->value[row], "row"));
@@ -186,8 +188,8 @@ public:
 	// Method to calculate the transpose of the matrix
 	Matrix transpose()
 	{
-		std::vector<Vector> oldVectors = this->toColumnVectors();
-		std::vector<Vector> newVectors;
+		ArrayList<Vector> oldVectors = this->toColumnVectors();
+		ArrayList<Vector> newVectors;
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
 			newVectors.push_back(oldVectors[i].transpose());
@@ -197,8 +199,8 @@ public:
 	// Method to overload the * operator to multiply a matrix by a scalar
 	Matrix operator*(double scalar)
 	{
-		std::vector<Vector> oldVectors = this->toRowVectors();
-		std::vector<Vector> newVectors;
+		ArrayList<Vector> oldVectors = this->toRowVectors();
+		ArrayList<Vector> newVectors;
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
 			newVectors.push_back(oldVectors[i] * scalar);
@@ -210,14 +212,14 @@ public:
 	{
 		if (this->numberOfColumns() != other.numberOfRows())
 		{
-			throw std::invalid_argument("Invalid dimensions");
+			Serial.println("Invalid dimensions");
 		}
-		std::vector<Vector> rowVectors = this->toRowVectors();
-		std::vector<Vector> columnVectors = other.toColumnVectors();
-		std::vector<std::vector<double>> results;
+		ArrayList<Vector> rowVectors = this->toRowVectors();
+		ArrayList<Vector> columnVectors = other.toColumnVectors();
+		ArrayList<ArrayList<double>> results;
 		for (int row = 0; row < this->numberOfRows(); row++)
 		{
-			std::vector<double> result;
+			ArrayList<double> result;
 			for (int column = 0; column < other.numberOfColumns(); column++)
 			{
 				result.push_back(rowVectors[row] * (columnVectors[column]));
@@ -231,16 +233,16 @@ public:
 	{
 		if (this->numberOfRows() != other.numberOfRows() || this->numberOfColumns() != other.numberOfColumns())
 		{
-			throw std::invalid_argument("Matrices must be the same size");
+			Serial.println("Matrices must have the same size");
 		}
 	}
 	// Method to overload the + operator to add two matrices
 	Matrix operator+(Matrix other)
 	{
 		this->ensureEqualSize(other);
-		std::vector<Vector> oldVectors = this->toRowVectors();
-		std::vector<Vector> otherVectors = other.toRowVectors();
-		std::vector<Vector> newVectors;
+		ArrayList<Vector> oldVectors = this->toRowVectors();
+		ArrayList<Vector> otherVectors = other.toRowVectors();
+		ArrayList<Vector> newVectors;
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
 			newVectors.push_back(oldVectors[i] + otherVectors[i]);
@@ -260,8 +262,8 @@ public:
 	// Method to overload the == operator to compare two matrices
 	bool operator==(Matrix other)
 	{
-		std::vector<Vector> oldVectors = this->toRowVectors();
-		std::vector<Vector> otherVectors = other.toRowVectors();
+		ArrayList<Vector> oldVectors = this->toRowVectors();
+		ArrayList<Vector> otherVectors = other.toRowVectors();
 		for (int i = 0; i < oldVectors.size(); i++)
 		{
 			if (oldVectors[i] != otherVectors[i])
@@ -281,7 +283,7 @@ public:
 	{
 		if (this->numberOfRows() != this->numberOfColumns())
 		{
-			throw std::invalid_argument("Matrix must be square");
+			Serial.println("Matrix must be square");
 		}
 	}
 	// Method to calculate the determinant of the matrix
@@ -320,7 +322,7 @@ public:
 	{
 		if (this->determinant() == 0.0)
 		{
-			throw std::invalid_argument("Matrix is not invertible");
+			Serial.println("Matrix must be invertible");
 		}
 	}
 	// Method to check if the matrix is an identity matrix
@@ -409,15 +411,15 @@ public:
 		this->ensureInvertible();
 		return this->adjoint() / this->determinant();
 	}
-	// Method to multiply a matrix by a vector
+	// Method to multiply a matrix by a ArrayList
 	Vector operator*(Vector other)
 	{
 		if (this->numberOfColumns() != other.size() && other.getShape() == "column")
 		{
-			throw std::invalid_argument("Invalid dimensions");
+			Serial.println("Invalid dimensions");
 		}
-		std::vector<double> result;
-		std::vector<Vector> rowVectors = this->toRowVectors();
+		ArrayList<double> result;
+		ArrayList<Vector> rowVectors = this->toRowVectors();
 		for (int row = 0; row < this->numberOfRows(); row++)
 		{
 			result.push_back(rowVectors[row] * other);
