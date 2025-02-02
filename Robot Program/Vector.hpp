@@ -2,7 +2,6 @@
 #include "ArrayList.hpp"
 #include "String.h"
 #include "UTF8Symbols.hpp"
-#include "Serial.h"
 // Class representing a generic ArrayList
 class Vector
 {

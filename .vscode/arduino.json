@@ -3,5 +3,6 @@
     "board": "arduino:avr:mega",
     "sketch": "Robot Program\\Robot Program.ino",
     "intelliSenseGen": "disable",
-    "clearOutputOnBuild": true
+    "clearOutputOnBuild": true,
+    "port": "COM4"
 }
