@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <Arduino.h>
 #include "FIR.hpp"
+#include "Vector.hpp"
 #define MPU6050_ADDRESS 0x68
 #define PWR_MGMT_1 0x6B
 #define GYRO_CONFIG 0x1B
@@ -34,7 +35,7 @@
 #define GYRO_YOUT_L 0x46
 #define GYRO_ZOUT_H 0x47
 #define GYRO_ZOUT_L 0x48
-#define GRAVITATIONAL_ACCELEROMETER 9.81 // meters per second squared
+#define GRAVITATIONAL_ACCELERATION 9.81 // meters per second squared
 #define NUMBER_OF_CALIBRATION_SAMPLES 1000
 #define FIR_COEFFICIENTS {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
 #define FIR_ORDER 10
@@ -42,26 +43,19 @@
 class MPU6050
 {
 private:
-	static constexpr double firCoefficients[FIR_ORDER] = FIR_COEFFICIENTS;
 	uint16_t accelerometerScale;
 	uint16_t gyroscopeScale;
-	double xAccelerometerCalibration;
-	double yAccelerometerCalibration;
-	double zAccelerometerCalibration;
-	double xGyroscopeCalibration;
-	double yGyroscopeCalibration;
-	double zGyroscopeCalibration;
-	double xAccelerometerRotationCorrection;
-	double yAccelerometerRotationCorrection;
-	double zAccelerometerRotationCorrection;
-	FIR xAccelerometerFIR;
-	FIR yAccelerometerFIR;
-	FIR zAccelerometerFIR;
-	FIR xGyroscopeFIR;
-	FIR yGyroscopeFIR;
-	FIR zGyroscopeFIR;
+	Vector accelerationVector;
+	Vector angularVelocityVector;
+	Vector accelerationCalibrationVector;
+	Vector angularVelocityCalibrationVector;
 public:
-	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale);
+	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale)
+	{
+		this->accelerometerScale = accelerometerScale;
+		this->gyroscopeScale = gyroscopeScale;
+		Wire.begin();
+	}
 	~MPU6050()
 	{
 		Wire.end();
@@ -90,93 +84,34 @@ public:
 		data |= this->read(addressL);
 		return data;
 	}
-	double getUnfilteredXAccelerometer()
+	Vector getUnfilteredAcceleration()
 	{
-		return ((double)this->getData(ACCEL_XOUT_H, ACCEL_XOUT_L)) / INT16_MAX * (this->accelerometerScale) * GRAVITATIONAL_ACCELEROMETER;
+		double x = this->getData(ACCEL_XOUT_H, ACCEL_XOUT_L) * GRAVITATIONAL_ACCELERATION * 2 / UINT16_MAX;
+		double y = this->getData(ACCEL_YOUT_H, ACCEL_YOUT_L) * GRAVITATIONAL_ACCELERATION * 2 / UINT16_MAX;
+		double z = this->getData(ACCEL_ZOUT_H, ACCEL_ZOUT_L) * GRAVITATIONAL_ACCELERATION * 2 / UINT16_MAX;
+		Vector acceleration = Vector({x, y, z}, "column");
+		return acceleration;
 	}
-	double getUnfilteredYAccelerometer()
+	Vector getUnfilteredAngularVelocity()
 	{
-		return ((double)this->getData(ACCEL_YOUT_H, ACCEL_YOUT_L)) / INT16_MAX * (this->accelerometerScale) * GRAVITATIONAL_ACCELEROMETER;
-	}
-	double getUnfilteredZAccelerometer()
-	{
-		return ((double)this->getData(ACCEL_ZOUT_H, ACCEL_ZOUT_L)) / INT16_MAX * (this->accelerometerScale) * GRAVITATIONAL_ACCELEROMETER;
-	}
-	double getUnfilteredXGyroscope()
-	{
-		return ((double)this->getData(GYRO_XOUT_H, GYRO_XOUT_L)) / INT16_MAX * (this->gyroscopeScale);
-	}
-	double getUnfilteredYGyroscope()
-	{
-		return ((double)this->getData(GYRO_YOUT_H, GYRO_YOUT_L)) / INT16_MAX * (this->gyroscopeScale);
-	}
-	double getUnfilteredZGyroscope()
-	{
-		return ((double)this->getData(GYRO_ZOUT_H, GYRO_ZOUT_L)) / INT16_MAX * (this->gyroscopeScale);
-	}
-	double getXGyroscope()
-	{
-		return this->xGyroscopeFIR.update(this->getUnfilteredXGyroscope() - this->xGyroscopeCalibration);
-	}
-	double getYGyroscope()
-	{
-		return this->yGyroscopeFIR.update(this->getUnfilteredYGyroscope() - this->yGyroscopeCalibration);
-	}
-	double getZGyroscope()
-	{
-		return this->zGyroscopeFIR.update(this->getUnfilteredZGyroscope() - this->zGyroscopeCalibration);
-	}
-	double getXAccelerometer()
-	{
-		return this->xAccelerometerFIR.update(this->getUnfilteredXAccelerometer() - this->xAccelerometerCalibration);
-	}
-	double getYAccelerometer()
-	{
-		return this->yAccelerometerFIR.update(this->getUnfilteredYAccelerometer() - this->yAccelerometerCalibration);
-	}
-	double getZAccelerometer()
-	{
-		return this->zAccelerometerFIR.update(this->getUnfilteredZAccelerometer() - this->zAccelerometerCalibration);
-	}
-	void updateAccelerometerRotationCorrection()
-	{
-		// TODO: Implement this function
-	}
-	String getDataString()
-	{
-		return "X Accelerometer: " + String(this->getXAccelerometer()) + " m/s^2\n" +
-			   "Y Accelerometer: " + String(this->getYAccelerometer()) + " m/s^2\n" +
-			   "Z Accelerometer: " + String(this->getZAccelerometer()) + " m/s^2\n" +
-			   "X Gyroscope: " + String(this->getXGyroscope()) + " degrees/s\n" +
-			   "Y Gyroscope: " + String(this->getYGyroscope()) + " degrees/s\n" +
-			   "Z Gyroscope: " + String(this->getZGyroscope()) + " degrees/s\n";
-	}
+		double x = this->getData(GYRO_XOUT_H, GYRO_XOUT_L) * this->gyroscopeScale / UINT16_MAX;
+		double y = this->getData(GYRO_YOUT_H, GYRO_YOUT_L) * this->gyroscopeScale / UINT16_MAX;
+		double z = this->getData(GYRO_ZOUT_H, GYRO_ZOUT_L) * this->gyroscopeScale / UINT16_MAX;
+		Vector angularVelocity = Vector({x, y, z}, "column");
+		return angularVelocity;
+	}	
 	void calibrate()
 	{
-		Serial.println("Starting MPU6050 Calibration");
-		double xAccelerometer = 0.0;
-		double yAccelerometer = 0.0;
-		double zAccelerometer = 0.0;
-		double xGyroscope = 0.0;
-		double yGyroscope = 0.0;
-		double zGyroscope = 0.0;
-		for (int i = 0; i < NUMBER_OF_CALIBRATION_SAMPLES; i++)
+		uint_8 sampleCount = 0;
+		this->accelerationCalibrationVector = Vector({0, 0, 0}, "column");
+		this->angularVelocityCalibrationVector = Vector({0, 0, 0}, "column");
+		while (sampleCount < NUMBER_OF_CALIBRATION_SAMPLES)
 		{
-			xAccelerometer += this->getUnfilteredXAccelerometer();
-			yAccelerometer += this->getUnfilteredYAccelerometer();
-			zAccelerometer += this->getUnfilteredZAccelerometer();
-			xGyroscope += this->getUnfilteredXGyroscope();
-			yGyroscope += this->getUnfilteredYGyroscope();
-			zGyroscope += this->getUnfilteredZGyroscope();
+			this->accelerationCalibrationVector = this->accelerationCalibrationVector + this->getUnfilteredAcceleration();
+			this->angularVelocityCalibrationVector = this->angularVelocityCalibrationVector + this->getUnfilteredAngularVelocity();
+			sampleCount++;
 			delay(CALIBRATION_DELAY);
 		}
-		this->xAccelerometerCalibration = xAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->yAccelerometerCalibration = yAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->zAccelerometerCalibration = zAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->xGyroscopeCalibration = xGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->yGyroscopeCalibration = yGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->zGyroscopeCalibration = zGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
-		Serial.println("MPU6050 Calibration Complete");
 	}
 	void setup()
 	{
@@ -219,20 +154,6 @@ public:
 	}
 	String getCalibrationString()
 	{
-		return "X Accelerometer Calibration: " + String(this->xAccelerometerCalibration) + "\n" +
-			   "Y Accelerometer Calibration: " + String(this->yAccelerometerCalibration) + "\n" +
-			   "Z Accelerometer Calibration: " + String(this->zAccelerometerCalibration) + "\n" +
-			   "X Gyroscope Calibration: " + String(this->xGyroscopeCalibration) + "\n" +
-			   "Y Gyroscope Calibration: " + String(this->yGyroscopeCalibration) + "\n" +
-			   "Z Gyroscope Calibration: " + String(this->zGyroscopeCalibration) + "\n";
+		//TODO: Implement getCalibrationString
 	}
 };
-
-MPU6050::MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale)
-	: accelerometerScale(accelerometerScale), gyroscopeScale(gyroscopeScale),
-	  xAccelerometerFIR(firCoefficients), yAccelerometerFIR(firCoefficients),
-	  zAccelerometerFIR(firCoefficients), xGyroscopeFIR(firCoefficients),
-	  yGyroscopeFIR(firCoefficients), zGyroscopeFIR(firCoefficients)
-{
-	Wire.begin();
-}
