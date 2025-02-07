@@ -4,5 +4,5 @@
     "sketch": "Robot Program\\Robot Program.ino",
     "intelliSenseGen": "disable",
     "clearOutputOnBuild": true,
-    "port": "COM4"
+    "port": "COM3"
 }
