@@ -1,7 +1,7 @@
 #pragma once
 #include <Wire.h>
 #include <Arduino.h>
-#include "FIR.hpp"
+#include "VectorFIR.hpp"
 #include "Vector.hpp"
 #define MPU6050_ADDRESS 0x68
 #define PWR_MGMT_1 0x6B
@@ -49,6 +49,9 @@ private:
 	Vector angularVelocityVector;
 	Vector accelerationCalibrationVector;
 	Vector angularVelocityCalibrationVector;
+	VectorFIR accelerationVectorFIR;
+	VectorFIR angularVelocityVectorFIR;
+
 public:
 	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale)
 	{
@@ -154,6 +157,33 @@ public:
 	}
 	String getCalibrationString()
 	{
-		//TODO: Implement getCalibrationString
+		String calibrationString = "Acceleration Calibration Vector: \n";
+		calibrationString += this->accelerationCalibrationVector.toString();
+		calibrationString += "\n";
+		calibrationString += "Angular Velocity Calibration Vector: \n";
+		calibrationString += this->angularVelocityCalibrationVector.toString();
+		calibrationString += "\n";
+		return calibrationString;
+	}
+	Vector getAngleCorrectedAccelerationCalibrationVector(Vector angleVector)
+	{
+		//TODO: Implement getAngleCorrectedAccelerationCalibrationVector
+	}
+	Vector getCalibratedAccelerationVector(Vector angleVector)
+	{
+		return this->getUnfilteredAcceleration() - this->getAngleCorrectedAccelerationCalibrationVector(angleVector);
+	}
+	Vector getCalibratedAngularVelocityVector()
+	{
+		return this->getUnfilteredAngularVelocity() - this->angularVelocityCalibrationVector;
+	}
+	Vector getFilteredAccelerationVector(Vector angleVector)
+	{
+		return this->accelerationVectorFIR.update(this->getCalibratedAccelerationVector(angleVector));
+		
+	}
+	Vector getFilteredAngularVelocityVector()
+	{
+		return this->angularVelocityVectorFIR.update(this->getCalibratedAngularVelocityVector());
 	}
 };
