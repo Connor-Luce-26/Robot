@@ -15,10 +15,10 @@
 #define GYROSCOPE_FULL_SCALE_RANGE_1 500	// degrees per second
 #define GYROSCOPE_FULL_SCALE_RANGE_2 1000	// degrees per second
 #define GYROSCOPE_FULL_SCALE_RANGE_3 2000	// degrees per second
-#define ACCELEROMETER_FULL_SCALE_RANGE_0 2	// gravitational Accelerometer
-#define ACCELEROMETER_FULL_SCALE_RANGE_1 4	// gravitational Accelerometer
-#define ACCELEROMETER_FULL_SCALE_RANGE_2 8	// gravitational Accelerometer
-#define ACCELEROMETER_FULL_SCALE_RANGE_3 16 // gravitational Accelerometer
+#define ACCELEROMETER_FULL_SCALE_RANGE_0 2	// gravitational acceleration
+#define ACCELEROMETER_FULL_SCALE_RANGE_1 4	// gravitational acceleration
+#define ACCELEROMETER_FULL_SCALE_RANGE_2 8	// gravitational acceleration
+#define ACCELEROMETER_FULL_SCALE_RANGE_3 16 // gravitational acceleration
 #define ACCELEROMETER_FS_SEL_0 0x00
 #define ACCELEROMETER_FS_SEL_1 0x08
 #define ACCELEROMETER_FS_SEL_2 0x10
@@ -76,8 +76,7 @@ public:
 		Wire.write(address);
 		Wire.endTransmission(false);
 		Wire.requestFrom(MPU6050_ADDRESS, 1);
-		while (!Wire.available())
-			;
+		while (!Wire.available());
 		return Wire.read();
 	}
 	int16_t getData(uint8_t addressH, uint8_t addressL)
@@ -186,4 +185,5 @@ public:
 	{
 		return this->angularVelocityVectorFIR.update(this->getCalibratedAngularVelocityVector());
 	}
+
 };
