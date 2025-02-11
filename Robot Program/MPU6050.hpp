@@ -35,14 +35,15 @@
 #define GYRO_ZOUT_H 0x47
 #define GYRO_ZOUT_L 0x48
 #define GRAVITATIONAL_ACCELEROMETER 9.81 // meters per second squared
-#define NUMBER_OF_CALIBRATION_SAMPLES 1000
-#define FIR_COEFFICIENTS {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
-#define FIR_ORDER 10
-#define CALIBRATION_DELAY 10
+#define MPU6050_NUMBER_OF_CALIBRATION_SAMPLES 1000
+#define MPU6050_FIR_COEFFICIENTS {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
+#define MPU6050_FIR_ORDER 10
+#define MPP6050_CALIBRATION_DELAY 10
+constexpr double MPU6050FIRCoefficients[MPU6050_FIR_ORDER] = MPU6050_FIR_COEFFICIENTS;
 class MPU6050
 {
 private:
-	static constexpr double firCoefficients[FIR_ORDER] = FIR_COEFFICIENTS;
+	
 	uint16_t accelerometerScale;
 	uint16_t gyroscopeScale;
 	double xAccelerometerCalibration;
@@ -141,6 +142,7 @@ public:
 	void updateAccelerometerRotationCorrection()
 	{
 		// TODO: Implement this function
+
 	}
 	String getDataString()
 	{
@@ -160,7 +162,7 @@ public:
 		double xGyroscope = 0.0;
 		double yGyroscope = 0.0;
 		double zGyroscope = 0.0;
-		for (int i = 0; i < NUMBER_OF_CALIBRATION_SAMPLES; i++)
+		for (int i = 0; i < MPU6050_NUMBER_OF_CALIBRATION_SAMPLES; i++)
 		{
 			xAccelerometer += this->getUnfilteredXAccelerometer();
 			yAccelerometer += this->getUnfilteredYAccelerometer();
@@ -168,15 +170,20 @@ public:
 			xGyroscope += this->getUnfilteredXGyroscope();
 			yGyroscope += this->getUnfilteredYGyroscope();
 			zGyroscope += this->getUnfilteredZGyroscope();
-			delay(CALIBRATION_DELAY);
+			delay(MPP6050_CALIBRATION_DELAY);
+			Serial.print("Calibration Sample ");
+			Serial.print(i);
+			Serial.print(" of ");
+			Serial.println(MPU6050_NUMBER_OF_CALIBRATION_SAMPLES);
 		}
-		this->xAccelerometerCalibration = xAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->yAccelerometerCalibration = yAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->zAccelerometerCalibration = zAccelerometer / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->xGyroscopeCalibration = xGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->yGyroscopeCalibration = yGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
-		this->zGyroscopeCalibration = zGyroscope / NUMBER_OF_CALIBRATION_SAMPLES;
+		this->xAccelerometerCalibration = xAccelerometer / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
+		this->yAccelerometerCalibration = yAccelerometer / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
+		this->zAccelerometerCalibration = zAccelerometer / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
+		this->xGyroscopeCalibration = xGyroscope / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
+		this->yGyroscopeCalibration = yGyroscope / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
+		this->zGyroscopeCalibration = zGyroscope / MPU6050_NUMBER_OF_CALIBRATION_SAMPLES;
 		Serial.println("MPU6050 Calibration Complete");
+		Serial.println(this->getCalibrationString());
 	}
 	void setup()
 	{
@@ -227,12 +234,11 @@ public:
 			   "Z Gyroscope Calibration: " + String(this->zGyroscopeCalibration) + "\n";
 	}
 };
-
 MPU6050::MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale)
 	: accelerometerScale(accelerometerScale), gyroscopeScale(gyroscopeScale),
-	  xAccelerometerFIR(firCoefficients), yAccelerometerFIR(firCoefficients),
-	  zAccelerometerFIR(firCoefficients), xGyroscopeFIR(firCoefficients),
-	  yGyroscopeFIR(firCoefficients), zGyroscopeFIR(firCoefficients)
+	  xAccelerometerFIR(MPU6050FIRCoefficients), yAccelerometerFIR(MPU6050FIRCoefficients),
+	  zAccelerometerFIR(MPU6050FIRCoefficients), xGyroscopeFIR(MPU6050FIRCoefficients),
+	  yGyroscopeFIR(MPU6050FIRCoefficients), zGyroscopeFIR(MPU6050FIRCoefficients)
 {
 	Wire.begin();
 }
