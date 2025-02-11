@@ -35,4 +35,14 @@ public:
 		output += this->coefficients[0] * this->buffer[0];
 		return output;
 	}
+	double getOutput()
+	{
+		double output = 0.0;
+		for (int i = this->order - 1; i > 0; i--)
+		{
+			output += this->coefficients[i] * this->buffer[i];
+		}
+		output += this->coefficients[0] * this->buffer[0];
+		return output;
+	}
 };

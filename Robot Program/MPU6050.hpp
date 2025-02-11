@@ -38,12 +38,12 @@
 #define MPU6050_NUMBER_OF_CALIBRATION_SAMPLES 1000
 #define MPU6050_FIR_COEFFICIENTS {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
 #define MPU6050_FIR_ORDER 10
-#define MPP6050_CALIBRATION_DELAY 10
+#define MPU6050_CALIBRATION_DELAY 10
+#define MPU6050_FIR_DELAY 10
 constexpr double MPU6050FIRCoefficients[MPU6050_FIR_ORDER] = MPU6050_FIR_COEFFICIENTS;
 class MPU6050
 {
 private:
-	
 	uint16_t accelerometerScale;
 	uint16_t gyroscopeScale;
 	double xAccelerometerCalibration;
@@ -52,15 +52,13 @@ private:
 	double xGyroscopeCalibration;
 	double yGyroscopeCalibration;
 	double zGyroscopeCalibration;
-	double xAccelerometerRotationCorrection;
-	double yAccelerometerRotationCorrection;
-	double zAccelerometerRotationCorrection;
 	FIR xAccelerometerFIR;
 	FIR yAccelerometerFIR;
 	FIR zAccelerometerFIR;
 	FIR xGyroscopeFIR;
 	FIR yGyroscopeFIR;
 	FIR zGyroscopeFIR;
+
 public:
 	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale);
 	~MPU6050()
@@ -117,32 +115,72 @@ public:
 	}
 	double getXGyroscope()
 	{
-		return this->xGyroscopeFIR.update(this->getUnfilteredXGyroscope() - this->xGyroscopeCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->xGyroscopeFIR.update(this->getUnfilteredXGyroscope() - this->xGyroscopeCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->xGyroscopeFIR.getOutput();
 	}
 	double getYGyroscope()
 	{
-		return this->yGyroscopeFIR.update(this->getUnfilteredYGyroscope() - this->yGyroscopeCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->yGyroscopeFIR.update(this->getUnfilteredYGyroscope() - this->yGyroscopeCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->yGyroscopeFIR.getOutput();
 	}
 	double getZGyroscope()
 	{
-		return this->zGyroscopeFIR.update(this->getUnfilteredZGyroscope() - this->zGyroscopeCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->zGyroscopeFIR.update(this->getUnfilteredZGyroscope() - this->zGyroscopeCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->zGyroscopeFIR.getOutput();
 	}
 	double getXAccelerometer()
 	{
-		return this->xAccelerometerFIR.update(this->getUnfilteredXAccelerometer() - this->xAccelerometerCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->xAccelerometerFIR.update(this->getUnfilteredXAccelerometer() - this->xAccelerometerCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->xAccelerometerFIR.getOutput();
 	}
 	double getYAccelerometer()
 	{
-		return this->yAccelerometerFIR.update(this->getUnfilteredYAccelerometer() - this->yAccelerometerCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->yAccelerometerFIR.update(this->getUnfilteredYAccelerometer() - this->yAccelerometerCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->yAccelerometerFIR.getOutput();
 	}
 	double getZAccelerometer()
 	{
-		return this->zAccelerometerFIR.update(this->getUnfilteredZAccelerometer() - this->zAccelerometerCalibration);
+		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
+		{
+			this->zAccelerometerFIR.update(this->getUnfilteredZAccelerometer() - this->zAccelerometerCalibration);
+			delay(MPU6050_FIR_DELAY);
+		}
+		return this->zAccelerometerFIR.getOutput();
 	}
-	void updateAccelerometerRotationCorrection()
+	void updateAccelerometerRotationCorrection(double xAngularPosition, double yAngularPosition, double zAngularPosition)
 	{
-		// TODO: Implement this function
-
+		double oldXAccelerometerCalibration = this->xAccelerometerCalibration;
+		double oldYAccelerometerCalibration = this->yAccelerometerCalibration;
+		double oldZAccelerometerCalibration = this->zAccelerometerCalibration;
+		this->xAccelerometerCalibration = oldXAccelerometerCalibration * cos(yAngularPosition) * cos(zAngularPosition) +
+										  oldYAccelerometerCalibration * (sin(xAngularPosition) * sin(yAngularPosition) * cos(zAngularPosition) - cos(xAngularPosition) * sin(zAngularPosition)) +
+										  oldZAccelerometerCalibration * (cos(xAngularPosition) * sin(yAngularPosition) * cos(zAngularPosition) + sin(xAngularPosition) * sin(zAngularPosition));
+		this->yAccelerometerCalibration = oldXAccelerometerCalibration * cos(yAngularPosition) * sin(zAngularPosition) +
+										  oldYAccelerometerCalibration * (sin(xAngularPosition) * sin(yAngularPosition) * sin(zAngularPosition) + cos(xAngularPosition) * cos(zAngularPosition)) +
+										  oldZAccelerometerCalibration * (cos(xAngularPosition) * sin(yAngularPosition) * sin(zAngularPosition) - sin(xAngularPosition) * cos(zAngularPosition));
+		this->zAccelerometerCalibration = -oldXAccelerometerCalibration * sin(yAngularPosition) +
+										  oldYAccelerometerCalibration * sin(xAngularPosition) * cos(yAngularPosition) +
+										  oldZAccelerometerCalibration * cos(xAngularPosition) * cos(yAngularPosition);
 	}
 	String getDataString()
 	{
@@ -170,7 +208,7 @@ public:
 			xGyroscope += this->getUnfilteredXGyroscope();
 			yGyroscope += this->getUnfilteredYGyroscope();
 			zGyroscope += this->getUnfilteredZGyroscope();
-			delay(MPP6050_CALIBRATION_DELAY);
+			delay(MPU6050_CALIBRATION_DELAY);
 			Serial.print("Calibration Sample ");
 			Serial.print(i);
 			Serial.print(" of ");
