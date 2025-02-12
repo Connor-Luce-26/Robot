@@ -7,10 +7,10 @@ private:
 	double *coefficients;
 	double *buffer;
 public:
-	FIR(double *coefficients) 
+	FIR(const double coefficients[])
 	{
 		this->order = sizeof(coefficients) - 1;
-		this->coefficients = new double[this->order];
+		this->coefficients = new double[this->order + 1];
 		this->buffer = new double[this->order];
 		for (int i = 0; i < this->order; i++)
 		{

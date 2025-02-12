@@ -11,7 +11,7 @@ private:
 	long endEchoTime;
 
 public:
-	HCSR04(uint8_t triggerOutput, uint8_t echoInput) : fir(HCSR04FIRCoefficients)
+	HCSR04(uint8_t triggerOutput, uint8_t echoInput)
 	{
 		this->triggerOutput = triggerOutput;
 		this->echoInput = echoInput;

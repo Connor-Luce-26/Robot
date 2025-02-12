@@ -1,6 +1,6 @@
 #pragma once
-#include <Wire.h>
 #include <Arduino.h>
+#include <Wire.h>
 #include "FIR.hpp"
 #define MPU6050_ADDRESS 0x68
 #define PWR_MGMT_1 0x6B
@@ -79,7 +79,8 @@ public:
 		Wire.endTransmission(false);
 		Wire.requestFrom(MPU6050_ADDRESS, 1);
 		while (!Wire.available())
-			;
+		{
+		}
 		return Wire.read();
 	}
 	int16_t getData(uint8_t addressH, uint8_t addressL)
