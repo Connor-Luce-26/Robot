@@ -1,7 +1,7 @@
 {
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "sketch": "Robot Program\\Robot Program.ino",
+    "sketch": "RobotArduinoSoftware\\RobotArduinoSoftware.ino",
     "intelliSenseGen": "disable",
     "clearOutputOnBuild": true,
     "port": "COM3"
