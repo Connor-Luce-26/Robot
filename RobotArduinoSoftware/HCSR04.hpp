@@ -2,38 +2,46 @@
 #include <Arduino.h>
 #define MICROSECONDS_PER_SECOND 1000000.0 // microseconds per second
 #define SOUND_SPEED 343.0 // meters per second
+#define LEFT_TRIGGER_PIN 38
+#define RIGHT_TRIGGER_PIN 40
+#define BACK_TRIGGER_PIN 42
+#define FRONT_TRIGGER_PIN 44
+#define LEFT_ECHO_PIN 3
+#define RIGHT_ECHO_PIN 2
+#define BACK_ECHO_PIN 18
+#define FRONT_ECHO_PIN 19
 class HCSR04
 {
 private:
-	uint8_t triggerOutput;
-	uint8_t echoInput;
+	uint8_t triggerPin;
+	uint8_t echoPin;
 	long startEchoTime;
 	long endEchoTime;
 
 public:
-	HCSR04(uint8_t triggerOutput, uint8_t echoInput)
+	HCSR04(uint8_t triggerPin, uint8_t echoPin)
 	{
-		this->triggerOutput = triggerOutput;
-		this->echoInput = echoInput;
-		pinMode(this->triggerOutput, OUTPUT);
-		pinMode(this->echoInput, INPUT);
-		digitalWrite(this->triggerOutput, LOW);
+		this->triggerPin = triggerPin;
+		this->echoPin = echoPin;
+		pinMode(this->triggerPin, OUTPUT);
+		pinMode(this->echoPin, INPUT);
+		digitalWrite(this->triggerPin, LOW);
 	}
 	~HCSR04()
 	{
 	}
 	void trigger()
 	{
-		digitalWrite(this->triggerOutput, HIGH);
+		digitalWrite(this->triggerPin, HIGH);
 		delayMicroseconds(10);
-		digitalWrite(this->triggerOutput, LOW);
+		digitalWrite(this->triggerPin, LOW);
 		this->echo();
 	}
 	void echo()
 	{
-		while (digitalRead(this->echoInput) == LOW);
+		while (digitalRead(this->echoPin) == LOW);
         this->startEchoTime = micros();
-        while (digitalRead(this->echoInput) == HIGH);
+        while (digitalRead(this->echoPin) == HIGH);
         this->endEchoTime = micros();
 	}
 	double getDistance()

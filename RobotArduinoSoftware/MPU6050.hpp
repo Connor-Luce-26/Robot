@@ -36,11 +36,9 @@
 #define GYRO_ZOUT_L 0x48
 #define GRAVITATIONAL_ACCELEROMETER 9.81 // meters per second squared
 #define MPU6050_NUMBER_OF_CALIBRATION_SAMPLES 1000
-#define MPU6050_FIR_COEFFICIENTS {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
 #define MPU6050_FIR_ORDER 10
 #define MPU6050_CALIBRATION_DELAY 10
 #define MPU6050_FIR_DELAY 10
-constexpr double MPU6050FIRCoefficients[MPU6050_FIR_ORDER] = MPU6050_FIR_COEFFICIENTS;
 class MPU6050
 {
 private:
@@ -60,7 +58,29 @@ private:
 	FIR zGyroscopeFIR;
 
 public:
-	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale);
+	MPU6050() 
+	{
+		Wire.begin();
+		this->accelerometerScale = ACCELEROMETER_FULL_SCALE_RANGE_0;
+		this->gyroscopeScale = GYROSCOPE_FULL_SCALE_RANGE_0;
+		this->xAccelerometerCalibration = 0.0;
+		this->yAccelerometerCalibration = 0.0;
+		this->zAccelerometerCalibration = 0.0;
+		this->xGyroscopeCalibration = 0.0;
+		this->yGyroscopeCalibration = 0.0;
+		this->zGyroscopeCalibration = 0.0;
+		this->xAccelerometerFIR = FIR(MPU6050_FIR_ORDER);
+		this->yAccelerometerFIR = FIR(MPU6050_FIR_ORDER);
+		this->zAccelerometerFIR = FIR(MPU6050_FIR_ORDER);
+		this->xGyroscopeFIR = FIR(MPU6050_FIR_ORDER);
+		this->yGyroscopeFIR = FIR(MPU6050_FIR_ORDER);
+		this->zGyroscopeFIR = FIR(MPU6050_FIR_ORDER);
+	}
+	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale): MPU6050()
+	{
+		this->accelerometerScale = accelerometerScale;
+		this->gyroscopeScale = gyroscopeScale;
+	}
 	~MPU6050()
 	{
 		Wire.end();
@@ -273,11 +293,3 @@ public:
 			   "Z Gyroscope Calibration: " + String(this->zGyroscopeCalibration) + "\n";
 	}
 };
-MPU6050::MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale)
-	: accelerometerScale(accelerometerScale), gyroscopeScale(gyroscopeScale),
-	  xAccelerometerFIR(MPU6050FIRCoefficients), yAccelerometerFIR(MPU6050FIRCoefficients),
-	  zAccelerometerFIR(MPU6050FIRCoefficients), xGyroscopeFIR(MPU6050FIRCoefficients),
-	  yGyroscopeFIR(MPU6050FIRCoefficients), zGyroscopeFIR(MPU6050FIRCoefficients)
-{
-	Wire.begin();
-}

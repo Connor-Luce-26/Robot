@@ -7,14 +7,17 @@ private:
 	double *coefficients;
 	double *buffer;
 public:
-	FIR(const double coefficients[])
+	FIR()
 	{
-		this->order = sizeof(coefficients) - 1;
-		this->coefficients = new double[this->order + 1];
+	}
+	FIR(uint8_t order)
+	{
+		this->order = order;
+		this->coefficients = new double[this->order];
 		this->buffer = new double[this->order];
 		for (int i = 0; i < this->order; i++)
 		{
-			this->coefficients[i] = coefficients[i];
+			this->coefficients[i] = 1.0 / this->order;
 			this->buffer[i] = 0.0;
 		}
 	}
@@ -22,6 +25,19 @@ public:
 	{
 		delete[] this->coefficients;
 		delete[] this->buffer;
+	}
+	double setCoefficients(const double coefficients[])
+	{
+		this->order = sizeof(coefficients) / sizeof(coefficients[0]);
+		this->coefficients = new double[this->order];
+		for (int i = 0; i < this->order; i++)
+		{
+			this->coefficients[i] = coefficients[i];
+		}
+	}
+	FIR(const double coefficients[])
+	{
+		this->setCoefficients(coefficients);
 	}
 	double update(double input)
 	{

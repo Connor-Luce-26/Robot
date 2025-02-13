@@ -21,10 +21,10 @@ private:
 	Integral yAngularPosition;
 	Integral zAngularPosition;
 	MPU6050 mpu;
-	
 public:
-	IMU():mpu(ACCELEROMETER_FULL_SCALE_RANGE_0, GYROSCOPE_FULL_SCALE_RANGE_0)
+	IMU()
 	{
+
 	}
 	~IMU()
 	{
@@ -106,4 +106,3 @@ public:
 		return data;
 	}
 };
-
