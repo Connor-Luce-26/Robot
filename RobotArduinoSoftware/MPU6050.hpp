@@ -58,7 +58,7 @@ private:
 	FIR zGyroscopeFIR;
 
 public:
-	MPU6050() 
+	MPU6050()
 	{
 		Wire.begin();
 		this->accelerometerScale = ACCELEROMETER_FULL_SCALE_RANGE_0;
@@ -76,7 +76,7 @@ public:
 		this->yGyroscopeFIR = FIR(MPU6050_FIR_ORDER);
 		this->zGyroscopeFIR = FIR(MPU6050_FIR_ORDER);
 	}
-	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale): MPU6050()
+	MPU6050(uint16_t accelerometerScale, uint16_t gyroscopeScale) : MPU6050()
 	{
 		this->accelerometerScale = accelerometerScale;
 		this->gyroscopeScale = gyroscopeScale;
@@ -138,7 +138,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->xGyroscopeFIR.update(this->getUnfilteredXGyroscope() - this->xGyroscopeCalibration);
+			this->xGyroscopeFIR.updateFIR(this->getUnfilteredXGyroscope() - this->xGyroscopeCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->xGyroscopeFIR.getOutput();
@@ -147,7 +147,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->yGyroscopeFIR.update(this->getUnfilteredYGyroscope() - this->yGyroscopeCalibration);
+			this->yGyroscopeFIR.updateFIR(this->getUnfilteredYGyroscope() - this->yGyroscopeCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->yGyroscopeFIR.getOutput();
@@ -156,7 +156,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->zGyroscopeFIR.update(this->getUnfilteredZGyroscope() - this->zGyroscopeCalibration);
+			this->zGyroscopeFIR.updateFIR(this->getUnfilteredZGyroscope() - this->zGyroscopeCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->zGyroscopeFIR.getOutput();
@@ -165,7 +165,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->xAccelerometerFIR.update(this->getUnfilteredXAccelerometer() - this->xAccelerometerCalibration);
+			this->xAccelerometerFIR.updateFIR(this->getUnfilteredXAccelerometer() - this->xAccelerometerCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->xAccelerometerFIR.getOutput();
@@ -174,7 +174,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->yAccelerometerFIR.update(this->getUnfilteredYAccelerometer() - this->yAccelerometerCalibration);
+			this->yAccelerometerFIR.updateFIR(this->getUnfilteredYAccelerometer() - this->yAccelerometerCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->yAccelerometerFIR.getOutput();
@@ -183,7 +183,7 @@ public:
 	{
 		for (uint8_t i = 0; i < MPU6050_FIR_ORDER; i++)
 		{
-			this->zAccelerometerFIR.update(this->getUnfilteredZAccelerometer() - this->zAccelerometerCalibration);
+			this->zAccelerometerFIR.updateFIR(this->getUnfilteredZAccelerometer() - this->zAccelerometerCalibration);
 			delay(MPU6050_FIR_DELAY);
 		}
 		return this->zAccelerometerFIR.getOutput();
@@ -210,9 +210,9 @@ public:
 			   "Z Accelerometer: " + String(this->getZAccelerometer()) + " m/s^2\n" +
 			   "X Gyroscope: " + String(this->getXGyroscope()) + " degrees/s\n" +
 			   "Y Gyroscope: " + String(this->getYGyroscope()) + " degrees/s\n" +
-			   "Z Gyroscope: " + String(this->getZGyroscope()) + " degrees/s\n";
+			   "Z Gyroscope: " + String(this->getZGyroscope()) + " degrees/s";
 	}
-	void calibrate()
+	void calibrateMPU6050()
 	{
 		Serial.println("Starting MPU6050 Calibration");
 		double xAccelerometer = 0.0;
@@ -244,8 +244,9 @@ public:
 		Serial.println("MPU6050 Calibration Complete");
 		Serial.println(this->getCalibrationString());
 	}
-	void setup()
+	void setupMPU6050()
 	{
+		Serial.println("Starting MPU6050 Setup");
 		this->write(PWR_MGMT_1, 0);
 		switch (this->gyroscopeScale)
 		{
@@ -281,7 +282,9 @@ public:
 		default:
 			break;
 		}
-		this->calibrate();
+		this->calibrateMPU6050();
+		Serial.println("MPU6050 Setup Complete");
+		
 	}
 	String getCalibrationString()
 	{
@@ -290,6 +293,6 @@ public:
 			   "Z Accelerometer Calibration: " + String(this->zAccelerometerCalibration) + "\n" +
 			   "X Gyroscope Calibration: " + String(this->xGyroscopeCalibration) + "\n" +
 			   "Y Gyroscope Calibration: " + String(this->yGyroscopeCalibration) + "\n" +
-			   "Z Gyroscope Calibration: " + String(this->zGyroscopeCalibration) + "\n";
+			   "Z Gyroscope Calibration: " + String(this->zGyroscopeCalibration);
 	}
 };

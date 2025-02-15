@@ -14,8 +14,12 @@ private:
 	uint8_t forwardPin;
 	uint8_t reversePin;
 	uint8_t dutyCycle;
+
 public:
-	Motor(uint8_t forwardPin, uint8_t reversePin)
+	Motor()
+	{
+	}
+	Motor(uint8_t forwardPin, uint8_t reversePin) : Motor()
 	{
 		this->forwardPin = forwardPin;
 		this->reversePin = reversePin;
@@ -24,7 +28,7 @@ public:
 	~Motor()
 	{
 	}
-	void setup()
+	void setupMotor()
 	{
 		pinMode(this->forwardPin, OUTPUT);
 		pinMode(this->reversePin, OUTPUT);

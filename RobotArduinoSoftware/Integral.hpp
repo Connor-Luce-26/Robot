@@ -17,7 +17,7 @@ public:
 	~Integral()
 	{
 	}
-	double update(double input)
+	double updateIntegral(double input)
 	{
 		long currentTime = micros();
 		double dt = (currentTime - this->time) / MICROSECONDS_PER_SECOND;
@@ -26,7 +26,7 @@ public:
 		this->input = input;
 		return this->value;
 	}
-	double getValue()
+	double getIntegralValue()
 	{
 		return this->value;
 	}

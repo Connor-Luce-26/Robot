@@ -14,14 +14,16 @@ public:
 	~E32900T20D()
 	{
 	}
-	void setup()
+	void setupE32900T20D()
 	{
+		Serial.println("Starting E32900T20D Setup");
 		Serial2.begin(TRANSCEIVER_BAUD);
 		pinMode(TRANSCEIVER_M0_PIN, OUTPUT);
 		pinMode(TRANSCEIVER_M1_PIN, OUTPUT);
 		pinMode(TRANSCEIVER_AUX_PIN, INPUT);
 		digitalWrite(TRANSCEIVER_M0_PIN, LOW);
 		digitalWrite(TRANSCEIVER_M1_PIN, LOW);
+		Serial.println("E32900T20D Setup Complete");
 	}
 	void write(String data)
 	{

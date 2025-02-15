@@ -39,7 +39,7 @@ public:
 	{
 		this->setCoefficients(coefficients);
 	}
-	double update(double input)
+	double updateFIR(double input)
 	{
 		double output = 0.0;
 		for (int i = this->order - 1; i > 0; i--)
