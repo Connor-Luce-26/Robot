@@ -2,14 +2,14 @@
 #include <Arduino.h>
 #define MICROSECONDS_PER_SECOND 1000000.0 // microseconds per second
 #define SOUND_SPEED 343.0 // meters per second
-#define LEFT_TRIGGER_PIN 38
-#define RIGHT_TRIGGER_PIN 40
-#define BACK_TRIGGER_PIN 42
-#define FRONT_TRIGGER_PIN 44
-#define LEFT_ECHO_PIN 3
-#define RIGHT_ECHO_PIN 2
-#define BACK_ECHO_PIN 18
-#define FRONT_ECHO_PIN 19
+#define HCSR04_LEFT_TRIGGER_PIN 38
+#define HCSR04_RIGHT_TRIGGER_PIN 40
+#define HCSR04_BACK_TRIGGER_PIN 42
+#define HCSR04_FRONT_TRIGGER_PIN 44
+#define HCSR04_LEFT_ECHO_PIN 3
+#define HCSR04_RIGHT_ECHO_PIN 2
+#define HCSR04_BACK_ECHO_PIN 18
+#define HCSR04_FRONT_ECHO_PIN 19
 class HCSR04
 {
 private:
@@ -23,12 +23,15 @@ public:
 	{
 		this->triggerPin = triggerPin;
 		this->echoPin = echoPin;
-		pinMode(this->triggerPin, OUTPUT);
-		pinMode(this->echoPin, INPUT);
-		digitalWrite(this->triggerPin, LOW);
 	}
 	~HCSR04()
 	{
+	}
+	void setupHCSR04()
+	{
+		pinMode(this->triggerPin, OUTPUT);
+		pinMode(this->echoPin, INPUT);
+		digitalWrite(this->triggerPin, LOW);
 	}
 	void trigger()
 	{
@@ -47,6 +50,6 @@ public:
 	double getDistance()
 	{
 		this->trigger();
-		return (this->endEchoTime - this->startEchoTime) / (2.0 * MICROSECONDS_PER_SECOND) / SOUND_SPEED;
+		return (this->endEchoTime - this->startEchoTime) / (2.0 * MICROSECONDS_PER_SECOND) * SOUND_SPEED;
 	}
 };

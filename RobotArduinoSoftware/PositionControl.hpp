@@ -71,12 +71,16 @@ public:
 	{
 		return (int16_t) (-this->xControlSignal + this->yControlSignal - this->thetaControlSignal);
 	}
-	void updatePositionControl()
+	void updateSensorData()
 	{
 		this->imu.updateIMU();
 		this->xPosition = this->imu.getXPosition();
 		this->yPosition = this->imu.getYPosition();
 		this->thetaPosition = this->imu.getZAngularPosition();
+	}
+	void updatePositionControl()
+	{
+		this->updateSensorData();
 		this->updatePrefilterGains();
 		this->updateControlSignals();
 		this->motorFrontRight.setThrottleLevel(this->getFrontRightThrottleLevelControlSignal());
@@ -113,5 +117,13 @@ public:
 		return "X Position: " + String(this->xPosition) + " m\n" +
 			   "Y Position: " + String(this->yPosition) + " m\n" +
 			   "Theta Position: " + String(this->thetaPosition) + " degrees";
+	}
+	double getXPositionSetpoint()
+	{
+		return this->xPositionSetpoint;
+	}
+	double getYPositionSetpoint()
+	{
+		return this->yPositionSetpoint;
 	}
 };
