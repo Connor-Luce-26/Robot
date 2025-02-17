@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 #define TRANSCEIVER_BAUD 9600
 #define TRANSCEIVER_M0_PIN 2
 #define TRANSCEIVER_M1_PIN 3
@@ -7,6 +8,7 @@
 class E32900T20D
 {
 private:
+	SoftwareSerial E32900T20DSerial = SoftwareSerial(TRANSCEIVER_M0_PIN, TRANSCEIVER_M1_PIN);
 public:
 	E32900T20D()
 	{
@@ -17,19 +19,20 @@ public:
 	void setupE32900T20D()
 	{
 		Serial.println("Starting E32900T20D Setup");
-		Serial2.begin(TRANSCEIVER_BAUD);
+		this->E32900T20DSerial.begin(TRANSCEIVER_BAUD);
 		pinMode(TRANSCEIVER_M0_PIN, OUTPUT);
 		pinMode(TRANSCEIVER_M1_PIN, OUTPUT);
 		pinMode(TRANSCEIVER_AUX_PIN, INPUT);
 		digitalWrite(TRANSCEIVER_M0_PIN, LOW);
 		digitalWrite(TRANSCEIVER_M1_PIN, LOW);
 		Serial.println("E32900T20D Setup Complete");
+
 	}
 	void write(String data)
 	{
-		if (Serial2.availableForWrite() > data.length())
+		if (this->E32900T20DSerial.availableForWrite() > data.length())
 		{
-			Serial2.print(data);
+			this->E32900T20DSerial.write(data.c_str());
 		}
 		else
 		{
@@ -38,9 +41,9 @@ public:
 	}
 	String read()
 	{
-		if (Serial2.available() > 0)
+		if (this->E32900T20DSerial.available() > 0)
 		{
-			return Serial2.readStringUntil('\n');
+			return this->E32900T20DSerial.readStringUntil('\n');
 		}
 		else
 		{

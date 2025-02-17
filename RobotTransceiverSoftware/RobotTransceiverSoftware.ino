@@ -11,12 +11,14 @@ SoftwareSerial transceiverSerial(TRANSCEIVER_RX_PIN, TRANSCEIVER_TX_PIN);
 void setup() 
 {
   Serial.begin(SERIAL_BAUD);
+  Serial.println("Starting Robot Transceiver Software Setup");
   transceiverSerial.begin(TRANSCEIVER_BAUD);
   pinMode(TRANSCEIVER_M0_PIN, OUTPUT);
   pinMode(TRANSCEIVER_M1_PIN, OUTPUT);
   pinMode(TRANSCEIVER_AUX_PIN, INPUT);
   digitalWrite(TRANSCEIVER_M0_PIN, LOW);
   digitalWrite(TRANSCEIVER_M1_PIN, LOW);
+  Serial.println("Robot Transceiver Software Setup Complete");
 }
 void loop()
 {
