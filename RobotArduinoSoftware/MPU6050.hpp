@@ -2,6 +2,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "FIR.hpp"
+#include "BasicLinearAlgebra.h"
+using namespace BLA;
 #define MPU6050_ADDRESS 0x68
 #define PWR_MGMT_1 0x6B
 #define GYRO_CONFIG 0x1B
@@ -39,6 +41,7 @@
 #define MPU6050_FIR_ORDER 10
 #define MPU6050_CALIBRATION_DELAY 10
 #define MPU6050_FIR_DELAY 10
+#define RADIANS_PER_DEGREE 0.01745329252 // radians per degree
 class MPU6050
 {
 private:
@@ -193,15 +196,18 @@ public:
 		double oldXAccelerometerCalibration = this->xAccelerometerCalibration;
 		double oldYAccelerometerCalibration = this->yAccelerometerCalibration;
 		double oldZAccelerometerCalibration = this->zAccelerometerCalibration;
-		this->xAccelerometerCalibration = oldXAccelerometerCalibration * cos(yAngularPosition) * cos(zAngularPosition) +
-										  oldYAccelerometerCalibration * (sin(xAngularPosition) * sin(yAngularPosition) * cos(zAngularPosition) - cos(xAngularPosition) * sin(zAngularPosition)) +
-										  oldZAccelerometerCalibration * (cos(xAngularPosition) * sin(yAngularPosition) * cos(zAngularPosition) + sin(xAngularPosition) * sin(zAngularPosition));
-		this->yAccelerometerCalibration = oldXAccelerometerCalibration * cos(yAngularPosition) * sin(zAngularPosition) +
-										  oldYAccelerometerCalibration * (sin(xAngularPosition) * sin(yAngularPosition) * sin(zAngularPosition) + cos(xAngularPosition) * cos(zAngularPosition)) +
-										  oldZAccelerometerCalibration * (cos(xAngularPosition) * sin(yAngularPosition) * sin(zAngularPosition) - sin(xAngularPosition) * cos(zAngularPosition));
-		this->zAccelerometerCalibration = -oldXAccelerometerCalibration * sin(yAngularPosition) +
-										  oldYAccelerometerCalibration * sin(xAngularPosition) * cos(yAngularPosition) +
-										  oldZAccelerometerCalibration * cos(xAngularPosition) * cos(yAngularPosition);
+		double sinXAngularPosition = sin(xAngularPosition * RADIANS_PER_DEGREE);
+		double cosXAngularPosition = cos(xAngularPosition * RADIANS_PER_DEGREE);
+		double sinYAngularPosition = sin(yAngularPosition * RADIANS_PER_DEGREE);
+		double cosYAngularPosition = cos(yAngularPosition * RADIANS_PER_DEGREE);
+		double sinZAngularPosition = sin(zAngularPosition * RADIANS_PER_DEGREE);
+		double cosZAngularPosition = cos(zAngularPosition * RADIANS_PER_DEGREE);
+		Matrix<3, 3> rotationMatrix = {cosZAngularPosition * cosYAngularPosition, -sinZAngularPosition * cosXAngularPosition + cosZAngularPosition * sinYAngularPosition * sinXAngularPosition, sinZAngularPosition * sinXAngularPosition + cosZAngularPosition * sinYAngularPosition * cosXAngularPosition, sinZAngularPosition * cosYAngularPosition, cosZAngularPosition * cosXAngularPosition + sinZAngularPosition * sinYAngularPosition * sinXAngularPosition, -cosZAngularPosition * sinXAngularPosition + sinZAngularPosition * sinYAngularPosition * cosXAngularPosition, -sinYAngularPosition, cosYAngularPosition * sinXAngularPosition, cosYAngularPosition * cosXAngularPosition};
+		Matrix<3, 1> accelerometerCalibrationVector = {oldXAccelerometerCalibration, oldYAccelerometerCalibration, oldZAccelerometerCalibration};
+		Matrix<3, 1> correctedAccelerometerCalibrationVector = rotationMatrix * accelerometerCalibrationVector;
+		this->xAccelerometerCalibration = correctedAccelerometerCalibrationVector(0, 0);
+		this->yAccelerometerCalibration = correctedAccelerometerCalibrationVector(1, 0);
+		this->zAccelerometerCalibration = correctedAccelerometerCalibrationVector(2, 0);
 	}
 	String getDataString()
 	{

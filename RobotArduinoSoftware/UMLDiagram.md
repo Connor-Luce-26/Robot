@@ -1,4 +1,5 @@
 ```mermaid
+%%{init: {'theme':'neutral'}}%%
 classDiagram
     class E32900T20D {
         +E32900T20D()

@@ -34,7 +34,9 @@ public:
 		this->motorBackRight = Motor(MOTOR_BACK_RIGHT_FORWARD_PIN, MOTOR_BACK_RIGHT_REVERSE_PIN);
 		this->motorBackLeft = Motor(MOTOR_BACK_LEFT_FORWARD_PIN, MOTOR_BACK_LEFT_REVERSE_PIN);
 	}
-	~PositionControl();
+	~PositionControl()
+	{
+	}
 	void setupPositionControl()
 	{
 		this->imu.setupIMU();
