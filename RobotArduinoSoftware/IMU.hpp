@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
-#include "MPU6050.hpp"
 #include "Integral.hpp"
+#include <Adafruit_MPU6050.h>
 class IMU
 {
 private:
@@ -20,7 +20,7 @@ private:
 	Integral xAngularPosition;
 	Integral yAngularPosition;
 	Integral zAngularPosition;
-	MPU6050 mpu;
+	Adafruit_MPU6050 mpu;
 public:
 	IMU()
 	{
@@ -32,21 +32,25 @@ public:
 	void setupIMU()
 	{
 		Serial.println("Starting IMU Setup");
-		this->mpu.setupMPU6050();
+		mpu.begin();
+		mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
+		mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+		mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 		Serial.println("IMU Setup Complete");
 	}
 	void updateIMU()
 	{
-		this->xAngularVelocity = this->mpu.getXGyroscope();
-		this->yAngularVelocity = this->mpu.getYGyroscope();
-		this->zAngularVelocity = this->mpu.getZGyroscope();
+		sensors_event_t a, g, temp;
+    	mpu.getEvent(&a, &g, &temp);
+		this->xAngularVelocity = g.gyro.x;
+		this->yAngularVelocity = g.gyro.y;
+		this->zAngularVelocity = g.gyro.z;
 		this->xAngularPosition.updateIntegral(this->xAngularVelocity);
 		this->yAngularPosition.updateIntegral(this->yAngularVelocity);
 		this->zAngularPosition.updateIntegral(this->zAngularVelocity);
-		this->mpu.updateAccelerometerRotationCorrection(this->xAngularPosition.getIntegralValue(), this->yAngularPosition.getIntegralValue(), this->zAngularPosition.getIntegralValue());
-		this->xAcceleration = this->mpu.getXAccelerometer();
-		this->yAcceleration = this->mpu.getYAccelerometer();
-		this->zAcceleration = this->mpu.getZAccelerometer();
+		this->xAcceleration = a.acceleration.x;
+		this->yAcceleration = a.acceleration.y;
+		this->zAcceleration = a.acceleration.z;
 		this->xVelocity.updateIntegral(this->xAcceleration);
 		this->yVelocity.updateIntegral(this->yAcceleration);
 		this->zVelocity.updateIntegral(this->zAcceleration);

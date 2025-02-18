@@ -123,4 +123,29 @@ public:
 	{
 		this->desiredThetaPositionSetpoint = desiredThetaPositionSetpoint;
 	}
+	String getCollisionAvoidanceString()
+	{
+		String data = "";
+		data += "f";
+		data += String(this->frontDistance);
+		data += "\n";
+		data += "b";
+		data += String(this->backDistance);
+		data += "\n";
+		data += "l";
+		data += String(this->leftDistance);
+		data += "\n";
+		data += "r";
+		data += String(this->rightDistance);
+		data += "\n";
+		data += "x";
+		data += String(this->positionControl.getXPosition());
+		data += "\n";
+		data += "y";
+		data += String(this->positionControl.getYPosition());
+		data += "\n";
+		data += "t";
+		data += String(this->positionControl.getThetaPosition());
+		data += "\n";
+	}
 };
