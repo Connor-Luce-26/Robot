@@ -10,6 +10,7 @@
 #define HCSR04_RIGHT_ECHO_PIN 2
 #define HCSR04_BACK_ECHO_PIN 18
 #define HCSR04_FRONT_ECHO_PIN 19
+#define HCSR04_ECHO_TIMEOUT 25000 // microseconds
 class HCSR04
 {
 private:
@@ -17,6 +18,7 @@ private:
 	uint8_t echoPin;
 	long startEchoTime;
 	long endEchoTime;
+	long endTriggerTime;
 
 public:
 	HCSR04(uint8_t triggerPin, uint8_t echoPin)
@@ -29,27 +31,36 @@ public:
 	}
 	void setupHCSR04()
 	{
+		Serial.println("Setting up HCSR04");
 		pinMode(this->triggerPin, OUTPUT);
 		pinMode(this->echoPin, INPUT);
 		digitalWrite(this->triggerPin, LOW);
+		Serial.println("HCSR04 Setup Complete");
 	}
 	void trigger()
 	{
+		Serial.println("Triggering HCSR04");
 		digitalWrite(this->triggerPin, HIGH);
 		delayMicroseconds(10);
 		digitalWrite(this->triggerPin, LOW);
+		this->endTriggerTime = micros();
 		this->echo();
 	}
 	void echo()
 	{
-		while (digitalRead(this->echoPin) == LOW);
+		while (digitalRead(this->echoPin) == LOW && micros() - this->endTriggerTime < HCSR04_ECHO_TIMEOUT);
         this->startEchoTime = micros();
         while (digitalRead(this->echoPin) == HIGH);
         this->endEchoTime = micros();
+		Serial.println("Echoing HCSR04");
 	}
 	double getDistance()
 	{
 		this->trigger();
+		if (this->endEchoTime - this->startEchoTime > HCSR04_ECHO_TIMEOUT)
+		{
+			return -1.0;
+		}
 		return (this->endEchoTime - this->startEchoTime) / (2.0 * MICROSECONDS_PER_SECOND) * SOUND_SPEED;
 	}
 };

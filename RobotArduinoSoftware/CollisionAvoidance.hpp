@@ -35,11 +35,13 @@ public:
 	}
 	void setupCollisionAvoidance()
 	{
+		Serial.println("Setting up Collision Avoidance");
 		this->hcsr04Front.setupHCSR04();
 		this->hcsr04Back.setupHCSR04();
 		this->hcsr04Left.setupHCSR04();
 		this->hcsr04Right.setupHCSR04();
 		this->positionControl.setupPositionControl();
+		Serial.println("Collision Avoidance Setup Complete");
 	}
 	void checkCollision()
 	{

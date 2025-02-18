@@ -8,7 +8,7 @@ ManipulatorArm manipulatorArm;
 String command;
 void setup()
 {	
-	Serial.begin(9600);
+	Serial.begin(115200);
 	Serial.println("Starting Setup");
 	collisionAvoidance.setupCollisionAvoidance();
 	e32900T20D.setupE32900T20D();
@@ -17,9 +17,12 @@ void setup()
 }
 void loop()
 {	
+	Serial.println("Starting Loop");
 	collisionAvoidance.updateCollisionAvoidance();
-	e32900T20D.write(collisionAvoidance.getCollisionAvoidanceString());
-	command = e32900T20D.read();
+  	Serial.println(collisionAvoidance.getCollisionAvoidanceString());
+	command = Serial.readStringUntil('\n');
+	// e32900T20D.write(collisionAvoidance.getCollisionAvoidanceString());
+	// command = e32900T20D.read();
 	switch (command[0])
 	{
 	case '1':

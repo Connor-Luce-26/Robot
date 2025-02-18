@@ -4,5 +4,5 @@
     "sketch": "RobotArduinoSoftware\\RobotArduinoSoftware.ino",
     "intelliSenseGen": "disable",
     "clearOutputOnBuild": true,
-    "port": "COM3"
+    "port": "COM5"
 }
