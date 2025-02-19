@@ -14,10 +14,12 @@ private:
 	uint8_t forwardPin;
 	uint8_t reversePin;
 	uint8_t dutyCycle;
+	bool forward;
 
 public:
 	Motor()
 	{
+		this->forward = true;
 	}
 	Motor(uint8_t forwardPin, uint8_t reversePin) : Motor()
 	{
@@ -36,17 +38,20 @@ public:
 	void setForward()
 	{
 		digitalWrite(this->reversePin, LOW);
-		digitalWrite(this->forwardPin, HIGH);
+		this->forward = true;
 	}
 	void setReverse()
 	{
 		digitalWrite(this->forwardPin, LOW);
-		digitalWrite(this->reversePin, HIGH);
+		this->forward = false;
 	}
 	void setDutyCycle(uint8_t dutyCycle)
 	{
 		this->dutyCycle = dutyCycle;
-		analogWrite(this->forwardPin, dutyCycle);
+		if (this->forward)
+		{
+			analogWrite(this->forwardPin, dutyCycle);
+		}
 		analogWrite(this->reversePin, dutyCycle);
 	}
 	void setThrottleLevel(int16_t setThrottleLevel)
