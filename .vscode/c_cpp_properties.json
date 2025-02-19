@@ -28,7 +28,8 @@
                 "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\Servo\\src",
                 "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\Adafruit_MPU6050",
                 "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\Adafruit_BusIO",
-                "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\Adafruit_Unified_Sensor"
+                "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\Adafruit_Unified_Sensor",
+                "C:\\Users\\lucerc\\OneDrive - Rose-Hulman Institute of Technology\\Documents\\Arduino\\libraries\\HCSR04\\src"
             ],
             "forcedInclude": [
                 "C:\\Users\\lucerc\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino\\Arduino.h"

@@ -1,6 +1,18 @@
 #pragma once
-#include "HCSR04.hpp"
+
 #include "PositionControl.hpp"
+#include <HCSR04.h>
+#include <Arduino.h>
+#define HCSR04_LEFT_TRIGGER_PIN 38
+#define HCSR04_RIGHT_TRIGGER_PIN 40
+#define HCSR04_BACK_TRIGGER_PIN 42
+#define HCSR04_FRONT_TRIGGER_PIN 44
+#define HCSR04_LEFT_ECHO_PIN 3
+#define HCSR04_RIGHT_ECHO_PIN 2
+#define HCSR04_BACK_ECHO_PIN 18
+#define HCSR04_FRONT_ECHO_PIN 19
+#define HCSR04_ECHO_TIMEOUT 25000 // microseconds
+#define METERS_PER_CENTERMETER 0.01 // meters per centimeter
 #define COLLISION_AVOIDANCE_FRONT_THRESHOLD_DISTANCE 0.2
 #define COLLISION_AVOIDANCE_BACK_THRESHOLD_DISTANCE 0.2
 #define COLLISION_AVOIDANCE_LEFT_THRESHOLD_DISTANCE 0.2
@@ -9,13 +21,14 @@
 #define COLLISION_AVOIDANCE_BACK_BIT 1
 #define COLLISION_AVOIDANCE_LEFT_BIT 2
 #define COLLISION_AVOIDANCE_RIGHT_BIT 3
+#define HCSR04_MAX_DISTANCE 4 // meters
 class CollisionAvoidance
 {
 private:
-	HCSR04 hcsr04Front = HCSR04(HCSR04_FRONT_TRIGGER_PIN, HCSR04_FRONT_ECHO_PIN);
-	HCSR04 hcsr04Back = HCSR04(HCSR04_BACK_TRIGGER_PIN, HCSR04_BACK_ECHO_PIN);
-	HCSR04 hcsr04Left = HCSR04(HCSR04_LEFT_TRIGGER_PIN, HCSR04_LEFT_ECHO_PIN);
-	HCSR04 hcsr04Right = HCSR04(HCSR04_RIGHT_TRIGGER_PIN, HCSR04_RIGHT_ECHO_PIN);
+	UltraSonicDistanceSensor hcsr04Front;
+	UltraSonicDistanceSensor hcsr04Back;
+	UltraSonicDistanceSensor hcsr04Left;
+	UltraSonicDistanceSensor hcsr04Right;
 	PositionControl positionControl;
 	double frontDistance;
 	double backDistance;
@@ -29,6 +42,10 @@ private:
 public:
 	CollisionAvoidance()
 	{
+		this->hcsr04Front = UltraSonicDistanceSensor(HCSR04_FRONT_TRIGGER_PIN, HCSR04_FRONT_ECHO_PIN, HCSR04_ECHO_TIMEOUT, HCSR04_MAX_DISTANCE * METERS_PER_CENTERMETER);
+		this->hcsr04Back = UltraSonicDistanceSensor(HCSR04_BACK_TRIGGER_PIN, HCSR04_BACK_ECHO_PIN, HCSR04_ECHO_TIMEOUT, HCSR04_MAX_DISTANCE * METERS_PER_CENTERMETER);
+		this->hcsr04Left = UltraSonicDistanceSensor(HCSR04_LEFT_TRIGGER_PIN, HCSR04_LEFT_ECHO_PIN, HCSR04_ECHO_TIMEOUT, HCSR04_MAX_DISTANCE * METERS_PER_CENTERMETER);
+		this->hcsr04Right = UltraSonicDistanceSensor(HCSR04_RIGHT_TRIGGER_PIN, HCSR04_RIGHT_ECHO_PIN, HCSR04_ECHO_TIMEOUT, HCSR04_MAX_DISTANCE * METERS_PER_CENTERMETER);
 	}
 	~CollisionAvoidance()
 	{
@@ -36,10 +53,6 @@ public:
 	void setupCollisionAvoidance()
 	{
 		Serial.println("Setting up Collision Avoidance");
-		this->hcsr04Front.setupHCSR04();
-		this->hcsr04Back.setupHCSR04();
-		this->hcsr04Left.setupHCSR04();
-		this->hcsr04Right.setupHCSR04();
 		this->positionControl.setupPositionControl();
 		Serial.println("Collision Avoidance Setup Complete");
 	}
@@ -105,10 +118,10 @@ public:
 	}
 	void updateCollisionAvoidance()
 	{
-		this->frontDistance = this->hcsr04Front.getDistance();
-		this->backDistance = this->hcsr04Back.getDistance();
-		this->leftDistance = this->hcsr04Left.getDistance();
-		this->rightDistance = this->hcsr04Right.getDistance();
+		this->frontDistance = this->hcsr04Front.measureDistanceCm() * METERS_PER_CENTERMETER;
+		this->backDistance = this->hcsr04Back.measureDistanceCm() * METERS_PER_CENTERMETER;
+		this->leftDistance = this->hcsr04Left.measureDistanceCm() * METERS_PER_CENTERMETER;
+		this->rightDistance = this->hcsr04Right.measureDistanceCm() * METERS_PER_CENTERMETER;
 		this->positionControl.updateSensorData();
 		this->checkCollision();
 		this->changePositionControlSetpoints();
@@ -128,26 +141,26 @@ public:
 	String getCollisionAvoidanceString()
 	{
 		String data = "";
-		data += "f";
+		data += "f ";
 		data += String(this->frontDistance);
-		data += "\n";
-		data += "b";
+		data += " \n";
+		data += "b ";
 		data += String(this->backDistance);
-		data += "\n";
-		data += "l";
+		data += " \n";
+		data += "l ";
 		data += String(this->leftDistance);
-		data += "\n";
-		data += "r";
+		data += " \n";
+		data += " r";
 		data += String(this->rightDistance);
-		data += "\n";
-		data += "x";
+		data += " \n";
+		data += "x ";
 		data += String(this->positionControl.getXPosition());
-		data += "\n";
-		data += "y";
+		data += " \n";
+		data += "y ";
 		data += String(this->positionControl.getYPosition());
-		data += "\n";
-		data += "t";
+		data += " \n";
+		data += "t ";
 		data += String(this->positionControl.getThetaPosition());
-		data += "\n";
+		data += " \n";
 	}
 };
