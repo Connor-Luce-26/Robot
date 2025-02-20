@@ -52,7 +52,10 @@ public:
 		{
 			analogWrite(this->forwardPin, dutyCycle);
 		}
-		analogWrite(this->reversePin, dutyCycle);
+		else
+		{
+			analogWrite(this->reversePin, dutyCycle);
+		}
 	}
 	void setThrottleLevel(int16_t setThrottleLevel)
 	{
